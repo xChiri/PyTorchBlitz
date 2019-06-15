@@ -24,6 +24,9 @@ model = torch.nn.Sequential(
 loss_fn = torch.nn.MSELoss(reduction='sum')
 
 learning_rate = 1e-4
+# the Adam optimizer will update the weights of the model.
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+
 for t in range(500):
     # forward pass: compute predicted y by passing x to the model. Module objects override
     # the __cal__ operator so you can call them like functions. When doing so you pass a
@@ -45,6 +48,9 @@ for t in range(500):
 
     # update the weights using gradient descent. Each parameters is a Tensor, so we can access its
     # gradients like we did before.
-    with torch.no_grad():
-        for param in model.parameters():
-            param -= learning_rate * param.grad
+    # with torch.no_grad():
+    #     for param in model.parameters():
+    #         param -= learning_rate * param.grad
+
+    # calling the step function on an Optimizer makes an update to its parameters
+    optimizer.step()
