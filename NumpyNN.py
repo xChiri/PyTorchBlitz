@@ -1,6 +1,33 @@
 import numpy as np
 import torch
 
+class MyReLU(torch.autograd.Function):
+    """
+    We can implement our custom autograd Functions by subclassing torch.autograd.Function and
+    implementing the forwards and backward passes which operate on Tensors.
+    """
+
+    @staticmethod
+    def forward(ctx, input):
+        """
+        In the forward pass we receive a Tensor containing the input and return a Tensor containing the output.
+        ctx is a context object that can be used to stash information for backward computation. You can cache
+        arbitrary objects for use in backward pass using the ctx.save_for_backward method.
+        """
+        ctx.save_for_backward(input)
+        return input.clamp(min=0)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        """
+        In the backward pass we receive a Tensor containing the gradient of the loss with respect to the output,
+        and we need to compute the gradient of the loss with respect to the input.
+        """
+        input, = ctx.saved_tensors
+        grad_input = grad_output.clone()
+        grad_input[input < 0] = 0
+        return grad_input
+
 device = torch.device("cpu")
 # device = torch.device("cuda:0") # uncomment this line to run on GPU
 
@@ -21,9 +48,12 @@ w2 = torch.randn(H, D_out, device=device, dtype=torch.float, requires_grad=True)
 
 learning_rate = 1e-6
 for t in range(500):
+    # to apply our autograd functions, we use the Function.apply method.
+    relu = MyReLU.apply
+
     # forward pass: compute predicted y using operations on Tensors; we do not need to hold intermediate
     # values since we are not implementing the backward pass by hand
-    y_pred = x.mm(w1).clamp(min=0).mm(w2)
+    y_pred = relu(x.mm(w1)).mm(w2)
 
     # compute and print loss using operations on Tensors
     loss = (y_pred - y).pow(2).sum()
