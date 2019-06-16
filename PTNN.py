@@ -39,7 +39,7 @@ for t in range(500):
     print(t, loss.item())
 
     # zero the gradients before the backward pass
-    model.zero_grad()
+    optimizer.zero_grad()
 
     # backward pass: compute gradient of the loss with respect to all the learnable parameters
     # of the model. Internally, the parameters of each Module are stored in Tensors with
